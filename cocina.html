@@ -103,12 +103,33 @@
         .mesa-item:hover::after { opacity: 1; }
         .mesa-item:active { transform: translateY(1px); }
 
-        .mesa-numero { font-size: 4vw; font-weight: 600; margin-bottom: 5px;}
+        /* Ajustes de número de mesa y alineación para la medalla */
+        .mesa-numero { 
+            font-size: 4vw; 
+            font-weight: 600; 
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Diseño del indicador de orden adaptado para el fondo rojo */
+        .badge-orden {
+            background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro semitransparente */
+            color: white;
+            padding: 5px 15px;
+            border-radius: 12px;
+            font-size: 0.5em; /* Es relativo al tamaño del texto principal */
+            font-weight: 700;
+            margin-right: 15px; /* Separación con la palabra "Mesa" */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
         .mesa-hora { font-size: 1.5vw; opacity: 0.9; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px;}
 
         h2.vacio { opacity: 0.5; margin-top: 50px; font-weight: 400; grid-column: 1 / -1; color: var(--primary-text);}
 
-        /* ANIMACIÓN DE MESA MARCHADA MODIFICADA PARA BEIGE FLUORESCENTE */
+        /* ANIMACIÓN DE MESA MARCHADA BEIGE FLUORESCENTE */
         #pantalla-animacion {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -120,13 +141,11 @@
 
         #pantalla-animacion.activa {
             animation: aparecerDesaparecer 3.5s forwards;
-            /* Añadimos un brillo beige fluorescente a toda la pantalla */
             box-shadow: inset 0 0 100px rgba(245, 245, 220, 0.3); 
         }
 
         #texto-animacion {
             font-size: 12vw; color: #fff;
-            /* Modificado para un brillo beige fluorescente */
             text-shadow: 
                 0 0 5px #fff,
                 0 0 10px #fff,
@@ -192,7 +211,6 @@
 
         // LÓGICA DEL BOTÓN DE SONIDO
         btnSonido.addEventListener('click', () => {
-            // Reproducimos y pausamos rápido para engañar al navegador y que nos dé permiso
             audioElement.volume = 0;
             audioElement.play().then(() => {
                 audioElement.pause();
@@ -200,12 +218,10 @@
                 audioElement.volume = 1;
                 sonidoActivado = true;
                 
-                // Cambiamos el aspecto del botón
                 btnSonido.style.backgroundColor = "#6c757d";
                 btnSonido.innerHTML = "🔊 Sonido Activado. Cocina Conectada.";
-                btnSonido.style.pointerEvents = "none"; // Desactivamos el clic
+                btnSonido.style.pointerEvents = "none";
                 
-                // Forzamos un chequeo inicial por si ya había mesas
                 chequearNuevasMesas(cantidadMesasAnterior);
                 
             }).catch(err => console.error("Error al activar audio:", err));
@@ -247,14 +263,13 @@
         // FUNCIÓN PARA REPRODUCIR SONIDO
         function chequearNuevasMesas(nuevaCantidad) {
             if (sonidoActivado && nuevaCantidad > cantidadMesasAnterior) {
-                // Hay más mesas que antes, significa que ha entrado una nueva
                 audioElement.currentTime = 0;
                 audioElement.play().catch(e => console.log("Navegador bloqueó el audio", e));
             }
-            cantidadMesasAnterior = nuevaCantidad; // Actualizamos el contador
+            cantidadMesasAnterior = nuevaCantidad; 
         }
 
-        // LISTENER DE FIREBASE
+        // LISTENER DE FIREBASE CON CONTADOR DE ORDEN
         onValue(mesasRef, (snapshot) => {
             contenedor.innerHTML = '';
             const datos = snapshot.val();
@@ -263,12 +278,21 @@
             if (datos) {
                 const keys = Object.keys(datos);
                 numMesasActuales = keys.length;
+                let contadorOrden = 1; // Inicializamos el contador en 1
                 
                 keys.forEach(key => {
                     const mesa = datos[key];
                     let div = document.createElement('div');
                     div.className = 'mesa-item';
-                    div.innerHTML = `<span class="mesa-numero">Mesa ${mesa.mesa}</span> <span class="mesa-hora">${mesa.hora}</span>`;
+                    
+                    // Aquí insertamos el "badge" con el número del contadorOrden
+                    div.innerHTML = `
+                        <span class="mesa-numero">
+                            <span class="badge-orden">${contadorOrden}º</span>
+                            Mesa ${mesa.mesa}
+                        </span> 
+                        <span class="mesa-hora">${mesa.hora}</span>
+                    `;
                     
                     div.onclick = () => {
                         animarMesaMarchada(`MESA ${mesa.mesa}`);
@@ -276,6 +300,7 @@
                     };
                     
                     contenedor.appendChild(div);
+                    contadorOrden++; // Sumamos 1 para la siguiente mesa
                 });
             } else {
                 contenedor.innerHTML = '<h2 class="vacio">Cocina limpia. ¡Buen trabajo!</h2>';
