@@ -7,87 +7,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #fdfcf5;
-            --header-bg: #f8f1e5;
-            --primary-text: #3e2723;
-            --warning-color: #f39c12; /* Naranja para expedir */
-            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --bg-color: #fdfcf5; --header-bg: #f8f1e5; --primary-text: #3e2723;
+            --warning-color: #f39c12; --orden-bg: #e74c3c; --shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-
-        /* Modificado para que no haya scroll nunca */
-        body, html { 
-            font-family: 'Poppins', sans-serif; 
-            margin: 0; 
-            padding: 0;
-            background-color: var(--bg-color); 
-            color: var(--primary-text); 
-            text-align: center; 
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* Elimina el scroll */
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header { 
-            background-color: var(--header-bg); 
-            padding: 10px 20px; 
-            box-shadow: var(--shadow); 
-            border-bottom: 2px solid #eae0d0; 
-            flex-shrink: 0; /* Evita que el header se encoja */
-        }
+        body, html { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--primary-text); text-align: center; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+        .header { background-color: var(--header-bg); padding: 10px 20px; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; flex-shrink: 0; }
         .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2em; color: #8d6e63; }
         .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1em; opacity: 0.8; }
-
-        /* CONTENEDOR GRID PARA LAS MESAS */
-        #lista-mesas { 
-            display: grid; 
-            flex-grow: 1; /* Ocupa todo el espacio sobrante debajo del header */
-            gap: 15px; 
-            padding: 15px; 
-            box-sizing: border-box;
-            align-items: stretch;
-            justify-items: stretch;
-        }
-
-        /* Tarjeta pulsable adaptada para el grid */
-        .mesa-item { 
-            background: white; 
-            border: 2px solid #eae0d0;
-            color: var(--primary-text);
-            border-radius: 15px; 
-            box-shadow: var(--shadow);
-            display: flex; 
-            flex-direction: column; /* Apila el número y la hora */
-            justify-content: center; 
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative; 
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-        }
-
-        .mesa-item::after {
-            content: 'TOCA PARA SACAR';
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--warning-color); color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 1.5vw;
-            opacity: 0; transition: opacity 0.2s;
-        }
-
+        
+        #lista-mesas { display: grid; flex-grow: 1; gap: 15px; padding: 15px; box-sizing: border-box; align-items: stretch; justify-items: stretch; }
+        .mesa-item { background: white; border: 2px solid #eae0d0; color: var(--primary-text); border-radius: 15px; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; width: 100%; height: 100%; }
+        .mesa-item::after { content: 'TOCA PARA SACAR'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--warning-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.5vw; opacity: 0; transition: opacity 0.2s; }
         .mesa-item:hover { border-color: var(--warning-color); transform: translateY(-2px); }
         .mesa-item:hover::after { opacity: 1; }
         .mesa-item:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* Ajuste de fuentes relativos a la pantalla (vw/vh) */
-        .mesa-numero { font-size: 3vw; font-weight: 600; margin-bottom: 10px;}
+        .mesa-numero { font-size: 3vw; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;}
+        .badge-orden { background-color: var(--orden-bg); color: white; padding: 5px 15px; border-radius: 12px; font-size: 0.5em; font-weight: 700; margin-right: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
         .mesa-hora { font-size: 1.5vw; opacity: 0.7; background: #f1f1f1; padding: 5px 10px; border-radius: 8px;}
-
         h2.vacio { opacity: 0.5; margin-top: 50px; font-weight: 400; grid-column: 1 / -1;}
-
     </style>
 </head>
 <body>
@@ -114,49 +52,47 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const mesasRef = ref(db, 'mesas_activas');
+        
+        // HORNOS AHORA ESCUCHA SOLO LA CARPETA 'mesas_hornos'
+        const hornosRef = ref(db, 'mesas_hornos');
         const contenedor = document.getElementById('lista-mesas');
 
-        // FUNCIÓN PARA AJUSTAR EL GRID A LA PANTALLA
         function ajustarTamañoMesas() {
-            const cantidadMesas = contenedor.children.length;
-            if (cantidadMesas === 0) {
-                contenedor.style.gridTemplateColumns = '1fr';
-                contenedor.style.gridTemplateRows = '1fr';
-                return;
-            }
-
-            const columnas = Math.ceil(Math.sqrt(cantidadMesas));
-            const filas = Math.ceil(cantidadMesas / columnas);
-
-            contenedor.style.gridTemplateColumns = `repeat(${columnas}, 1fr)`;
-            contenedor.style.gridTemplateRows = `repeat(${filas}, 1fr)`;
+            const cantidad = contenedor.children.length;
+            if (cantidad === 0) { contenedor.style.gridTemplateColumns = '1fr'; contenedor.style.gridTemplateRows = '1fr'; return; }
+            const col = Math.ceil(Math.sqrt(cantidad));
+            const fil = Math.ceil(cantidad / col);
+            contenedor.style.gridTemplateColumns = `repeat(${col}, 1fr)`;
+            contenedor.style.gridTemplateRows = `repeat(${fil}, 1fr)`;
         }
 
-        // LISTENER DE FIREBASE
-        onValue(mesasRef, (snapshot) => {
+        onValue(hornosRef, (snapshot) => {
             contenedor.innerHTML = '';
             const datos = snapshot.val();
             
             if (datos) {
+                let contadorOrden = 1; 
                 Object.keys(datos).forEach(key => {
                     const mesa = datos[key];
                     let div = document.createElement('div');
                     div.className = 'mesa-item';
-                    div.innerHTML = `<span class="mesa-numero">Mesa ${mesa.mesa}</span> <span class="mesa-hora">${mesa.hora}</span>`;
+                    div.innerHTML = `
+                        <span class="mesa-numero">
+                            <span class="badge-orden">${contadorOrden}º</span> Mesa ${mesa.mesa}
+                        </span> 
+                        <span class="mesa-hora">${mesa.hora}</span>`;
                     
                     div.onclick = () => {
-                        // BORRAMOS DE FIREBASE DIRECTAMENTE (sin animación)
-                        remove(ref(db, `mesas_activas/${key}`));
+                        // Elimina la mesa definitivamente
+                        remove(ref(db, `mesas_hornos/${key}`));
                     };
                     
                     contenedor.appendChild(div);
+                    contadorOrden++; 
                 });
             } else {
                 contenedor.innerHTML = '<h2 class="vacio">Hornos vacíos</h2>';
             }
-
-            // RECALCULAMOS EL TAMAÑO CADA VEZ QUE ENTRA O SALE UNA MESA
             ajustarTamañoMesas();
         });
     </script>

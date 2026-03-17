@@ -7,85 +7,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #fdfcf5;      /* Beige muy claro */
-            --header-bg: #f8f1e5;     /* Beige ligeramente más oscuro */
-            --primary-text: #3e2723; /* Marrón café oscuro */
-            --accent-color: #e67e22;  /* Terracotta/Naranja suave */
+            --bg-color: #fdfcf5;
+            --header-bg: #f8f1e5;
+            --primary-text: #3e2723;
+            --accent-color: #e67e22;
             --shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            background-color: var(--bg-color); 
-            color: var(--primary-text); 
-        }
+        body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--primary-text); }
 
-        /* Cabecera Pastamania */
-        .header {
-            background-color: var(--header-bg);
-            padding: 20px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            border-bottom: 2px solid #eae0d0;
-        }
-        .header h1 { 
-            margin: 0; 
-            font-family: 'Playfair Display', serif; 
-            font-size: 2.5em; 
-            color: #8d6e63; /* Marrón más suave */
-        }
-        .header h2 { 
-            margin: 5px 0 0 0; 
-            font-weight: 400; 
-            font-size: 1.1em; 
-            opacity: 0.8;
-        }
+        .header { background-color: var(--header-bg); padding: 20px; text-align: center; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; }
+        .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2.5em; color: #8d6e63; }
+        .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1.1em; opacity: 0.8; }
 
-        .container { padding: 20px; max-width: 800px; margin: auto; }
+        /* Estructura dividida para el panel y el registro */
+        .layout { display: flex; flex-wrap: wrap; max-width: 1200px; margin: auto; padding: 20px; gap: 30px; }
+        .panel-mesas { flex: 2; min-width: 300px; }
+        .panel-registro { flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 15px; box-shadow: var(--shadow); border: 2px solid #eae0d0; max-height: 70vh; overflow-y: auto;}
+
+        .panel-registro h3 { text-align: center; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-top: 0;}
+        .log-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-weight: 600;}
+        .log-item .hora { opacity: 0.6; font-weight: 400;}
 
         /* Grid de mesas */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); 
-            gap: 15px; 
-            padding: 20px 0; 
-        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 15px; padding: 20px 0; }
+        button.mesa-btn { aspect-ratio: 1 / 1; font-size: 22px; font-weight: 600; cursor: pointer; background: white; color: var(--primary-text); border: 2px solid #eae0d0; border-radius: 12px; box-shadow: var(--shadow); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;}
+        button.mesa-btn:hover { transform: translateY(-3px); border-color: var(--accent-color); color: var(--accent-color); }
+        button.mesa-btn:active { background-color: var(--accent-color); color: white; transform: translateY(1px); }
 
-        button.mesa-btn { 
-            aspect-ratio: 1 / 1; /* Botones cuadrados */
-            font-size: 22px; 
-            font-weight: 600;
-            cursor: pointer; 
-            background: white; 
-            color: var(--primary-text); 
-            border: 2px solid #eae0d0; 
-            border-radius: 12px; 
-            box-shadow: var(--shadow);
-            transition: all 0.2s ease;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        button.mesa-btn:hover { 
-            transform: translateY(-3px); 
-            border-color: var(--accent-color); 
-            color: var(--accent-color);
-        }
-
-        button.mesa-btn:active { 
-            background-color: var(--accent-color); 
-            color: white; 
-            transform: translateY(1px);
-        }
-
-        /* Notificación simple customizada (reemplaza alert) */
-        #notificacion {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #2ecc71; color: white; padding: 15px 30px;
-            border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: none; font-weight: 600; z-index: 100;
-        }
+        #notificacion { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: none; font-weight: 600; z-index: 100; }
     </style>
 </head>
 <body>
@@ -94,15 +44,22 @@
         <h2>Panel de Sala - Marchar Mesa</h2>
     </div>
 
-    <div class="container">
-        <div class="grid" id="contenedor-mesas"></div>
+    <div class="layout">
+        <div class="panel-mesas">
+            <div class="grid" id="contenedor-mesas"></div>
+        </div>
+
+        <div class="panel-registro">
+            <h3>Registro Marchadas</h3>
+            <div id="lista-registro"></div>
+        </div>
     </div>
 
     <div id="notificacion">Mesa enviada</div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; // REVISA VERSIÓN
-        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; 
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w",
@@ -116,11 +73,16 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const mesasRef = ref(db, 'mesas_activas');
+        
+        // AHORA MANDAMOS LAS MESAS A LA CARPETA 'mesas_cocina' y al 'historial'
+        const cocinaRef = ref(db, 'mesas_cocina');
+        const historialRef = ref(db, 'historial_mesas');
 
         const contenedor = document.getElementById('contenedor-mesas');
+        const listaRegistro = document.getElementById('lista-registro');
         const notif = document.getElementById('notificacion');
 
+        // Generar botones
         for (let i = 1; i <= 70; i++) {
             let btn = document.createElement('button');
             btn.className = 'mesa-btn';
@@ -131,16 +93,31 @@
 
         function marcharMesa(numero) {
             const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            push(mesasRef, {
-                mesa: numero,
-                hora: horaActual
-            });
+            const datosMesa = { mesa: numero, hora: horaActual };
             
-            // Feedback visual elegante en lugar de alert
-            notif.innerText = `Mesa ${numero} marchada`;
+            // Enviamos a cocina y al registro
+            push(cocinaRef, datosMesa);
+            push(historialRef, datosMesa);
+            
+            notif.innerText = `Mesa ${numero} a Cocina`;
             notif.style.display = 'block';
             setTimeout(() => notif.style.display = 'none', 2000);
         }
+
+        // Escuchar el historial para pintar el registro en pantalla
+        onValue(historialRef, (snapshot) => {
+            listaRegistro.innerHTML = '';
+            const datos = snapshot.val();
+            if (datos) {
+                // Le damos la vuelta para ver las más recientes arriba
+                const arrayMesas = Object.values(datos).reverse(); 
+                arrayMesas.forEach(mesa => {
+                    listaRegistro.innerHTML += `<div class="log-item"><span>Mesa ${mesa.mesa}</span> <span class="hora">${mesa.hora}</span></div>`;
+                });
+            } else {
+                listaRegistro.innerHTML = '<p style="text-align:center; opacity:0.5;">Aún no hay mesas marchadas</p>';
+            }
+        });
     </script>
 </body>
 </html>

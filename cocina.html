@@ -7,186 +7,51 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #fdfcf5;
-            --header-bg: #f8f1e5;
-            --primary-text: #3e2723;
-            --card-bg: #d9534f; /* Rojo de las tarjetas */
-            --shadow: 0 4px 6px rgba(0,0,0,0.05);
-            /* Definimos el color beige fluorescente base */
-            --neon-beige: #f5f5dc; 
+            --bg-color: #fdfcf5; --header-bg: #f8f1e5; --primary-text: #3e2723;
+            --card-bg: #d9534f; --shadow: 0 4px 6px rgba(0,0,0,0.05); --neon-beige: #f5f5dc; 
         }
-
-        /* Sin scroll nunca */
-        body, html { 
-            font-family: 'Poppins', sans-serif; 
-            margin: 0; 
-            padding: 0;
-            background-color: var(--bg-color); 
-            color: var(--primary-text); 
-            text-align: center; 
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden; 
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header { 
-            background-color: var(--header-bg); 
-            padding: 10px 20px; 
-            box-shadow: var(--shadow); 
-            border-bottom: 2px solid #eae0d0; 
-            flex-shrink: 0; 
-        }
+        body, html { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--primary-text); text-align: center; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+        .header { background-color: var(--header-bg); padding: 10px 20px; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; flex-shrink: 0; }
         .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2em; color: #8d6e63; }
         .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1em; opacity: 0.8; }
 
-        /* Botón de sonido */
-        #btn-sonido {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            font-size: 1em;
-            cursor: pointer;
-            margin: 10px auto;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 100;
-        }
-
-        /* CONTENEDOR GRID */
-        #lista-mesas { 
-            display: grid; 
-            flex-grow: 1; 
-            gap: 15px; 
-            padding: 15px; 
-            box-sizing: border-box;
-            align-items: stretch;
-            justify-items: stretch;
-        }
-
-        /* Tarjeta roja */
-        .mesa-item { 
-            background: var(--card-bg); 
-            color: white;
-            border-radius: 15px; 
-            box-shadow: var(--shadow);
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative; 
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Efecto hover */
-        .mesa-item::after {
-            content: 'MARCHAR MESA';
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 2vw;
-            opacity: 0; transition: opacity 0.2s;
-        }
-
+        #btn-sonido { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; margin: 10px auto; display: inline-flex; z-index: 100; }
+        #lista-mesas { display: grid; flex-grow: 1; gap: 15px; padding: 15px; box-sizing: border-box; align-items: stretch; justify-items: stretch; }
+        
+        .mesa-item { background: var(--card-bg); color: white; border-radius: 15px; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; width: 100%; height: 100%; }
+        .mesa-item::after { content: 'ENVIAR A HORNOS'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 2vw; opacity: 0; transition: opacity 0.2s; }
         .mesa-item:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
         .mesa-item:hover::after { opacity: 1; }
         .mesa-item:active { transform: translateY(1px); }
 
-        /* Ajustes de número de mesa y alineación para la medalla */
-        .mesa-numero { 
-            font-size: 4vw; 
-            font-weight: 600; 
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Diseño del indicador de orden adaptado para el fondo rojo */
-        .badge-orden {
-            background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro semitransparente */
-            color: white;
-            padding: 5px 15px;
-            border-radius: 12px;
-            font-size: 0.5em; /* Es relativo al tamaño del texto principal */
-            font-weight: 700;
-            margin-right: 15px; /* Separación con la palabra "Mesa" */
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
-
+        .mesa-numero { font-size: 4vw; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;}
+        .badge-orden { background-color: rgba(0, 0, 0, 0.4); color: white; padding: 5px 15px; border-radius: 12px; font-size: 0.5em; font-weight: 700; margin-right: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
         .mesa-hora { font-size: 1.5vw; opacity: 0.9; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px;}
-
         h2.vacio { opacity: 0.5; margin-top: 50px; font-weight: 400; grid-column: 1 / -1; color: var(--primary-text);}
 
-        /* ANIMACIÓN DE MESA MARCHADA BEIGE FLUORESCENTE */
-        #pantalla-animacion {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: rgba(0, 0, 0, 0.85);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999; 
-            opacity: 0; pointer-events: none;
-        }
-
-        #pantalla-animacion.activa {
-            animation: aparecerDesaparecer 3.5s forwards;
-            box-shadow: inset 0 0 100px rgba(245, 245, 220, 0.3); 
-        }
-
-        #texto-animacion {
-            font-size: 12vw; color: #fff;
-            text-shadow: 
-                0 0 5px #fff,
-                0 0 10px #fff,
-                0 0 20px var(--neon-beige),
-                0 0 30px var(--neon-beige),
-                0 0 40px var(--neon-beige),
-                0 0 55px var(--neon-beige),
-                0 0 75px var(--neon-beige); 
-            margin: 0; text-transform: uppercase;
-        }
-
-        @keyframes aparecerDesaparecer {
-            0% { transform: scale(0.2); opacity: 0; }
-            15% { transform: scale(1.2); opacity: 1; }
-            25% { transform: scale(1); opacity: 1; }
-            80% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(3); opacity: 0; }
-        }
-
+        /* ANIMACIÓN BEIGE FLUORESCENTE */
+        #pantalla-animacion { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; }
+        #pantalla-animacion.activa { animation: aparecerDesaparecer 3.5s forwards; box-shadow: inset 0 0 100px rgba(245, 245, 220, 0.3); }
+        #texto-animacion { font-size: 12vw; color: #fff; text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-beige), 0 0 30px var(--neon-beige), 0 0 40px var(--neon-beige), 0 0 55px var(--neon-beige), 0 0 75px var(--neon-beige); margin: 0; text-transform: uppercase; }
+        @keyframes aparecerDesaparecer { 0% { transform: scale(0.2); opacity: 0; } 15% { transform: scale(1.2); opacity: 1; } 25% { transform: scale(1); opacity: 1; } 80% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
         .oculto { display: none !important; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Pastamania</h1>
-        <h2>Pantalla de Cocina</h2>
+        <h2>Pantalla de Cocina (Preparación)</h2>
     </div>
 
     <button id="btn-sonido">🔔 Activar Sonido y Conectar</button>
-
     <div id="lista-mesas"></div>
 
-    <div id="pantalla-animacion" class="oculto">
-        <h1 id="texto-animacion">MESA 1</h1>
-    </div>
-
+    <div id="pantalla-animacion" class="oculto"><h1 id="texto-animacion">MESA 1</h1></div>
     <audio id="audio-nueva-comanda" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; 
-        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w",
@@ -200,16 +65,18 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const mesasRef = ref(db, 'mesas_activas');
+        
+        // RECIBIMOS DE COCINA Y ENVIAMOS A HORNOS
+        const cocinaRef = ref(db, 'mesas_cocina');
+        const hornosRef = ref(db, 'mesas_hornos');
         const contenedor = document.getElementById('lista-mesas');
         
-        // Variables para el control de sonido
         let sonidoActivado = false;
-        let cantidadMesasAnterior = 0;
+        let mesasConocidas = []; // Para detectar mesas nuevas
+        let esPrimeraCarga = true; 
         const audioElement = document.getElementById('audio-nueva-comanda');
         const btnSonido = document.getElementById('btn-sonido');
 
-        // LÓGICA DEL BOTÓN DE SONIDO
         btnSonido.addEventListener('click', () => {
             audioElement.volume = 0;
             audioElement.play().then(() => {
@@ -217,97 +84,77 @@
                 audioElement.currentTime = 0;
                 audioElement.volume = 1;
                 sonidoActivado = true;
-                
                 btnSonido.style.backgroundColor = "#6c757d";
-                btnSonido.innerHTML = "🔊 Sonido Activado. Cocina Conectada.";
+                btnSonido.innerHTML = "🔊 Cocina Conectada";
                 btnSonido.style.pointerEvents = "none";
-                
-                chequearNuevasMesas(cantidadMesasAnterior);
-                
-            }).catch(err => console.error("Error al activar audio:", err));
+            }).catch(e => console.error(e));
         });
 
-        // FUNCIÓN DE ANIMACIÓN
-        function animarMesaMarchada(nombreMesa) {
+        function animarMesaEntrante(nombreMesa) {
             const pantallaAnim = document.getElementById('pantalla-animacion');
-            const textoAnim = document.getElementById('texto-animacion');
-    
-            textoAnim.innerText = nombreMesa; 
+            document.getElementById('texto-animacion').innerText = nombreMesa; 
             pantallaAnim.classList.remove('oculto');
             pantallaAnim.classList.remove('activa');
             void pantallaAnim.offsetWidth; 
             pantallaAnim.classList.add('activa');
-    
-            setTimeout(() => {
-                pantallaAnim.classList.add('oculto');
-                pantallaAnim.classList.remove('activa');
-            }, 3500);
+            setTimeout(() => { pantallaAnim.classList.add('oculto'); pantallaAnim.classList.remove('activa'); }, 3500);
         }
 
-        // FUNCIÓN PARA AJUSTAR EL GRID A LA PANTALLA
         function ajustarTamañoMesas() {
-            const cantidadMesas = contenedor.children.length;
-            if (cantidadMesas === 0) {
-                contenedor.style.gridTemplateColumns = '1fr';
-                contenedor.style.gridTemplateRows = '1fr';
-                return;
-            }
-
-            const columnas = Math.ceil(Math.sqrt(cantidadMesas));
-            const filas = Math.ceil(cantidadMesas / columnas);
-
-            contenedor.style.gridTemplateColumns = `repeat(${columnas}, 1fr)`;
-            contenedor.style.gridTemplateRows = `repeat(${filas}, 1fr)`;
+            const cantidad = contenedor.children.length;
+            if (cantidad === 0) { contenedor.style.gridTemplateColumns = '1fr'; contenedor.style.gridTemplateRows = '1fr'; return; }
+            const col = Math.ceil(Math.sqrt(cantidad));
+            const fil = Math.ceil(cantidad / col);
+            contenedor.style.gridTemplateColumns = `repeat(${col}, 1fr)`;
+            contenedor.style.gridTemplateRows = `repeat(${fil}, 1fr)`;
         }
 
-        // FUNCIÓN PARA REPRODUCIR SONIDO
-        function chequearNuevasMesas(nuevaCantidad) {
-            if (sonidoActivado && nuevaCantidad > cantidadMesasAnterior) {
-                audioElement.currentTime = 0;
-                audioElement.play().catch(e => console.log("Navegador bloqueó el audio", e));
-            }
-            cantidadMesasAnterior = nuevaCantidad; 
-        }
-
-        // LISTENER DE FIREBASE CON CONTADOR DE ORDEN
-        onValue(mesasRef, (snapshot) => {
+        onValue(cocinaRef, (snapshot) => {
             contenedor.innerHTML = '';
             const datos = snapshot.val();
-            let numMesasActuales = 0;
+            const keysActuales = datos ? Object.keys(datos) : [];
             
+            // Lógica para detectar si hay mesas nuevas
+            if (!esPrimeraCarga && datos) {
+                const nuevas = keysActuales.filter(k => !mesasConocidas.includes(k));
+                if (nuevas.length > 0) {
+                    // Si ha entrado alguna mesa nueva, disparamos animación y sonido con la primera
+                    animarMesaEntrante(`MESA ${datos[nuevas[0]].mesa}`);
+                    if (sonidoActivado) {
+                        audioElement.currentTime = 0;
+                        audioElement.play().catch(e => console.log(e));
+                    }
+                }
+            }
+
             if (datos) {
-                const keys = Object.keys(datos);
-                numMesasActuales = keys.length;
-                let contadorOrden = 1; // Inicializamos el contador en 1
-                
-                keys.forEach(key => {
+                let contadorOrden = 1;
+                keysActuales.forEach(key => {
                     const mesa = datos[key];
                     let div = document.createElement('div');
                     div.className = 'mesa-item';
-                    
-                    // Aquí insertamos el "badge" con el número del contadorOrden
                     div.innerHTML = `
                         <span class="mesa-numero">
-                            <span class="badge-orden">${contadorOrden}º</span>
-                            Mesa ${mesa.mesa}
+                            <span class="badge-orden">${contadorOrden}º</span> Mesa ${mesa.mesa}
                         </span> 
-                        <span class="mesa-hora">${mesa.hora}</span>
-                    `;
+                        <span class="mesa-hora">${mesa.hora}</span>`;
                     
                     div.onclick = () => {
-                        animarMesaMarchada(`MESA ${mesa.mesa}`);
-                        remove(ref(db, `mesas_activas/${key}`));
+                        // AQUÍ ES EL CAMBIO DE FLUJO: Enviamos a hornos y borramos de cocina (Sin animación aquí)
+                        push(hornosRef, mesa);
+                        remove(ref(db, `mesas_cocina/${key}`));
                     };
                     
                     contenedor.appendChild(div);
-                    contadorOrden++; // Sumamos 1 para la siguiente mesa
+                    contadorOrden++;
                 });
             } else {
-                contenedor.innerHTML = '<h2 class="vacio">Cocina limpia. ¡Buen trabajo!</h2>';
+                contenedor.innerHTML = '<h2 class="vacio">Cocina libre</h2>';
             }
 
+            mesasConocidas = keysActuales; // Actualizamos la memoria
+            esPrimeraCarga = false;
             ajustarTamañoMesas();
-            chequearNuevasMesas(numMesasActuales);
         });
     </script>
 </body>
