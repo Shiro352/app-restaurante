@@ -23,9 +23,18 @@
         /* Estructura dividida para el panel y el registro */
         .layout { display: flex; flex-wrap: wrap; max-width: 1200px; margin: auto; padding: 20px; gap: 30px; }
         .panel-mesas { flex: 2; min-width: 300px; }
-        .panel-registro { flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 15px; box-shadow: var(--shadow); border: 2px solid #eae0d0; max-height: 70vh; overflow-y: auto;}
+        .panel-registro { flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 15px; box-shadow: var(--shadow); border: 2px solid #eae0d0; max-height: 70vh; overflow-y: auto; display: flex; flex-direction: column;}
 
-        .panel-registro h3 { text-align: center; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-top: 0;}
+        /* Cabecera del registro con botón de borrado */
+        .cabecera-registro { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 10px; }
+        .cabecera-registro h3 { margin: 0; }
+        
+        #btn-limpiar { 
+            background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 8px; 
+            font-family: 'Poppins', sans-serif; font-size: 0.8em; cursor: pointer; transition: 0.2s;
+        }
+        #btn-limpiar:hover { background: #c0392b; transform: scale(1.05); }
+
         .log-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-weight: 600;}
         .log-item .hora { opacity: 0.6; font-weight: 400;}
 
@@ -50,7 +59,10 @@
         </div>
 
         <div class="panel-registro">
-            <h3>Registro Marchadas</h3>
+            <div class="cabecera-registro">
+                <h3>Registro</h3>
+                <button id="btn-limpiar" title="Borrar todo el historial">🗑️ Limpiar</button>
+            </div>
             <div id="lista-registro"></div>
         </div>
     </div>
@@ -59,7 +71,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; 
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        // ¡Importante! Añadimos 'remove' para poder borrar datos
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w",
@@ -74,15 +87,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
-        // AHORA MANDAMOS LAS MESAS A LA CARPETA 'mesas_cocina' y al 'historial'
         const cocinaRef = ref(db, 'mesas_cocina');
         const historialRef = ref(db, 'historial_mesas');
 
         const contenedor = document.getElementById('contenedor-mesas');
         const listaRegistro = document.getElementById('lista-registro');
         const notif = document.getElementById('notificacion');
+        const btnLimpiar = document.getElementById('btn-limpiar');
 
-        // Generar botones
+        // Generar botones de mesas
         for (let i = 1; i <= 70; i++) {
             let btn = document.createElement('button');
             btn.className = 'mesa-btn';
@@ -91,11 +104,11 @@
             contenedor.appendChild(btn);
         }
 
+        // Función para enviar mesa a cocina y guardar en registro
         function marcharMesa(numero) {
             const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const datosMesa = { mesa: numero, hora: horaActual };
             
-            // Enviamos a cocina y al registro
             push(cocinaRef, datosMesa);
             push(historialRef, datosMesa);
             
@@ -104,18 +117,24 @@
             setTimeout(() => notif.style.display = 'none', 2000);
         }
 
-        // Escuchar el historial para pintar el registro en pantalla
+        // Botón para borrar el historial
+        btnLimpiar.onclick = () => {
+            if(confirm("¿Estás seguro de que quieres borrar todo el registro de hoy?")) {
+                remove(historialRef);
+            }
+        };
+
+        // Escuchar el historial
         onValue(historialRef, (snapshot) => {
             listaRegistro.innerHTML = '';
             const datos = snapshot.val();
             if (datos) {
-                // Le damos la vuelta para ver las más recientes arriba
                 const arrayMesas = Object.values(datos).reverse(); 
                 arrayMesas.forEach(mesa => {
                     listaRegistro.innerHTML += `<div class="log-item"><span>Mesa ${mesa.mesa}</span> <span class="hora">${mesa.hora}</span></div>`;
                 });
             } else {
-                listaRegistro.innerHTML = '<p style="text-align:center; opacity:0.5;">Aún no hay mesas marchadas</p>';
+                listaRegistro.innerHTML = '<p style="text-align:center; opacity:0.5; margin-top:20px;">Aún no hay mesas marchadas</p>';
             }
         });
     </script>
