@@ -14,35 +14,67 @@
             --shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--primary-text); text-align: center; }
+        /* Modificado para que no haya scroll nunca */
+        body, html { 
+            font-family: 'Poppins', sans-serif; 
+            margin: 0; 
+            padding: 0;
+            background-color: var(--bg-color); 
+            color: var(--primary-text); 
+            text-align: center; 
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Elimina el scroll */
+            display: flex;
+            flex-direction: column;
+        }
 
-        .header { background-color: var(--header-bg); padding: 20px; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; }
-        .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2.5em; color: #8d6e63; }
-        .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1.1em; opacity: 0.8; }
+        .header { 
+            background-color: var(--header-bg); 
+            padding: 10px 20px; 
+            box-shadow: var(--shadow); 
+            border-bottom: 2px solid #eae0d0; 
+            flex-shrink: 0; /* Evita que el header se encoja */
+        }
+        .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2em; color: #8d6e63; }
+        .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1em; opacity: 0.8; }
 
-        #lista-mesas { display: flex; flex-direction: column; gap: 15px; padding: 30px 20px; max-width: 500px; margin: auto; }
+        /* NUEVO CONTENEDOR GRID PARA LAS MESAS */
+        #lista-mesas { 
+            display: grid; 
+            flex-grow: 1; /* Ocupa todo el espacio sobrante debajo del header */
+            gap: 15px; 
+            padding: 15px; 
+            box-sizing: border-box;
+            align-items: stretch;
+            justify-items: stretch;
+        }
 
-        /* Tarjeta pulsable en hornos */
+        /* Tarjeta pulsable adaptada para el grid */
         .mesa-item { 
             background: white; 
             border: 2px solid #eae0d0;
             color: var(--primary-text);
-            padding: 20px 25px; 
             border-radius: 15px; 
             box-shadow: var(--shadow);
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; 
+            flex-direction: column; /* Apila el número y la hora */
+            justify-content: center; 
+            align-items: center;
             cursor: pointer;
             transition: all 0.2s;
-            position: relative; overflow: hidden;
+            position: relative; 
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
         }
 
-        /* Indicador visual de que se va a borrar */
         .mesa-item::after {
             content: 'TOCA PARA SACAR';
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--warning-color); color: white;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 18px;
+            font-weight: 600; font-size: 1.5vw;
             opacity: 0; transition: opacity 0.2s;
         }
 
@@ -50,10 +82,41 @@
         .mesa-item:hover::after { opacity: 1; }
         .mesa-item:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        .mesa-numero { font-size: 32px; font-weight: 600; }
-        .mesa-hora { font-size: 18px; opacity: 0.7; background: #f1f1f1; padding: 5px 10px; border-radius: 8px;}
+        /* Ajuste de fuentes relativos a la pantalla (vw/vh) */
+        .mesa-numero { font-size: 3vw; font-weight: 600; margin-bottom: 10px;}
+        .mesa-hora { font-size: 1.5vw; opacity: 0.7; background: #f1f1f1; padding: 5px 10px; border-radius: 8px;}
 
-        h2.vacio { opacity: 0.5; margin-top: 50px; font-weight: 400;}
+        h2.vacio { opacity: 0.5; margin-top: 50px; font-weight: 400; grid-column: 1 / -1;}
+
+        /* ANIMACIÓN DE MESA MARCHADA */
+        #pantalla-animacion {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999; 
+            opacity: 0; pointer-events: none;
+        }
+
+        #pantalla-animacion.activa {
+            animation: aparecerDesaparecer 3.5s forwards;
+        }
+
+        #texto-animacion {
+            font-size: 12vw; color: #fff;
+            text-shadow: 0 0 30px #4CAF50, 0 0 60px #4CAF50; 
+            margin: 0; text-transform: uppercase;
+        }
+
+        @keyframes aparecerDesaparecer {
+            0% { transform: scale(0.2); opacity: 0; }
+            15% { transform: scale(1.2); opacity: 1; }
+            25% { transform: scale(1); opacity: 1; }
+            80% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+
+        .oculto { display: none !important; }
     </style>
 </head>
 <body>
@@ -64,11 +127,15 @@
 
     <div id="lista-mesas"></div>
 
+    <div id="pantalla-animacion" class="oculto">
+        <h1 id="texto-animacion">MESA 1</h1>
+    </div>
+
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; // REVISA VERSIÓN
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; 
         import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-           const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w",
             authDomain: "comandasrestaurante.firebaseapp.com",
             databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app",
@@ -78,13 +145,45 @@
             appId: "1:242359011020:web:70d0e9fd5712b1d3662469"
         };
 
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const mesasRef = ref(db, 'mesas_activas');
-
         const contenedor = document.getElementById('lista-mesas');
 
+        // FUNCIÓN DE ANIMACIÓN
+        function animarMesaMarchada(nombreMesa) {
+            const pantallaAnim = document.getElementById('pantalla-animacion');
+            const textoAnim = document.getElementById('texto-animacion');
+    
+            textoAnim.innerText = nombreMesa; 
+            pantallaAnim.classList.remove('oculto');
+            pantallaAnim.classList.remove('activa');
+            void pantallaAnim.offsetWidth; // Reflow
+            pantallaAnim.classList.add('activa');
+    
+            setTimeout(() => {
+                pantallaAnim.classList.add('oculto');
+                pantallaAnim.classList.remove('activa');
+            }, 3500);
+        }
+
+        // FUNCIÓN PARA AJUSTAR EL GRID A LA PANTALLA
+        function ajustarTamañoMesas() {
+            const cantidadMesas = contenedor.children.length;
+            if (cantidadMesas === 0) {
+                contenedor.style.gridTemplateColumns = '1fr';
+                contenedor.style.gridTemplateRows = '1fr';
+                return;
+            }
+
+            const columnas = Math.ceil(Math.sqrt(cantidadMesas));
+            const filas = Math.ceil(cantidadMesas / columnas);
+
+            contenedor.style.gridTemplateColumns = `repeat(${columnas}, 1fr)`;
+            contenedor.style.gridTemplateRows = `repeat(${filas}, 1fr)`;
+        }
+
+        // LISTENER DE FIREBASE
         onValue(mesasRef, (snapshot) => {
             contenedor.innerHTML = '';
             const datos = snapshot.val();
@@ -96,9 +195,11 @@
                     div.className = 'mesa-item';
                     div.innerHTML = `<span class="mesa-numero">Mesa ${mesa.mesa}</span> <span class="mesa-hora">${mesa.hora}</span>`;
                     
-                    // Doble check opcional para evitar borrados accidentales en hora punta
                     div.onclick = () => {
-                        // Eliminamos directamente para mayor velocidad, la animación hover ya avisa
+                        // 1. LLAMAMOS A LA ANIMACIÓN ANTES DE BORRAR
+                        animarMesaMarchada(`MESA ${mesa.mesa}`);
+                        
+                        // 2. BORRAMOS DE FIREBASE
                         remove(ref(db, `mesas_activas/${key}`));
                     };
                     
@@ -107,6 +208,9 @@
             } else {
                 contenedor.innerHTML = '<h2 class="vacio">Hornos vacíos</h2>';
             }
+
+            // 3. RECALCULAMOS EL TAMAÑO CADA VEZ QUE ENTRA O SALE UNA MESA
+            ajustarTamañoMesas();
         });
     </script>
 </body>
