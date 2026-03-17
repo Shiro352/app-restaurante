@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hornos - Sacar Mesas</title>
+    <style>
+        body { font-family: Arial; background: #333; color: white; text-align: center; }
+        #lista-mesas { display: flex; flex-direction: column; gap: 10px; padding: 20px; max-width: 400px; margin: auto; }
+        .mesa-item { background: #f0ad4e; padding: 20px; font-size: 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between;}
+        .mesa-item:active { background: #ec971f; }
+    </style>
+</head>
+<body>
+    <h1>Hornos - (Pulsa para sacar)</h1>
+    <div id="lista-mesas"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w",
+            authDomain: "comandasrestaurante.firebaseapp.com",
+            databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "comandasrestaurante",
+            storageBucket: "comandasrestaurante.firebasestorage.app",
+            messagingSenderId: "242359011020",
+            appId: "1:242359011020:web:70d0e9fd5712b1d3662469"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const mesasRef = ref(db, 'mesas_activas');
+
+        const contenedor = document.getElementById('lista-mesas');
+
+        onValue(mesasRef, (snapshot) => {
+            contenedor.innerHTML = '';
+            const datos = snapshot.val();
+            
+            if (datos) {
+                Object.keys(datos).forEach(key => {
+                    const mesa = datos[key];
+                    let div = document.createElement('div');
+                    div.className = 'mesa-item';
+                    div.innerHTML = `<span>Mesa ${mesa.mesa}</span> <span>${mesa.hora}</span>`;
+                    
+                    // Al hacer clic, borramos esa mesa de Firebase
+                    div.onclick = () => {
+                        if(confirm(`¿Sacar Mesa ${mesa.mesa}?`)) {
+                            remove(ref(db, `mesas_activas/${key}`));
+                        }
+                    };
+                    
+                    contenedor.appendChild(div);
+                });
+            } else {
+                contenedor.innerHTML = '<h2>Todo limpio</h2>';
+            }
+        });
+    </script>
+</body>
+</html>

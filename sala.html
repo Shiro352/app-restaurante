@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala - Marchar Mesas</title>
+    <style>
+        body { font-family: Arial; text-align: center; background: #f0f0f0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; padding: 20px; }
+        button { padding: 15px; font-size: 18px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        button:active { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Marchar Mesas - Sala</h1>
+    <div class="grid" id="contenedor-mesas"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w",
+            authDomain: "comandasrestaurante.firebaseapp.com",
+            databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "comandasrestaurante",
+            storageBucket: "comandasrestaurante.firebasestorage.app",
+            messagingSenderId: "242359011020",
+            appId: "1:242359011020:web:70d0e9fd5712b1d3662469"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const mesasRef = ref(db, 'mesas_activas');
+
+        const contenedor = document.getElementById('contenedor-mesas');
+
+        // Generar 70 botones
+        for (let i = 1; i <= 70; i++) {
+            let btn = document.createElement('button');
+            btn.innerText = i;
+            btn.onclick = () => marcharMesa(i);
+            contenedor.appendChild(btn);
+        }
+
+        function marcharMesa(numero) {
+            const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            push(mesasRef, {
+                mesa: numero,
+                hora: horaActual
+            });
+            // Opcional: un pequeño efecto visual para confirmar que se pulsó
+            alert(`Mesa ${numero} marchada a las ${horaActual}`); 
+        }
+    </script>
+</body>
+</html>

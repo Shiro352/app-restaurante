@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocina - Pantalla</title>
+    <style>
+        body { font-family: Arial; background: #222; color: white; text-align: center; }
+        #lista-mesas { display: flex; flex-direction: column; gap: 10px; padding: 20px; max-width: 400px; margin: auto; }
+        .mesa-item { background: #d9534f; padding: 20px; font-size: 24px; border-radius: 8px; font-weight: bold; display: flex; justify-content: space-between;}
+        #btn-conectar { background: #28a745; color: white; padding: 15px 30px; font-size: 20px; border: none; cursor: pointer; margin-top: 20px;}
+    </style>
+</head>
+<body>
+    <h1>Pantalla de Cocina</h1>
+    <button id="btn-conectar">Conectar y Activar Sonido</button>
+    <div id="lista-mesas"></div>
+
+    <audio id="sonido-alarma" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w",
+            authDomain: "comandasrestaurante.firebaseapp.com",
+            databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "comandasrestaurante",
+            storageBucket: "comandasrestaurante.firebasestorage.app",
+            messagingSenderId: "242359011020",
+            appId: "1:242359011020:web:70d0e9fd5712b1d3662469"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const mesasRef = ref(db, 'mesas_activas');
+
+        const contenedor = document.getElementById('lista-mesas');
+        const sonido = document.getElementById('sonido-alarma');
+        let cantidadAnterior = 0;
+        let sonidoActivado = false;
+
+        document.getElementById('btn-conectar').onclick = () => {
+            sonidoActivado = true;
+            document.getElementById('btn-conectar').style.display = 'none'; // Ocultamos el botón tras pulsar
+            sonido.play().catch(e => console.log("Sonido iniciado")); // Truco para desbloquear el audio
+        };
+
+        onValue(mesasRef, (snapshot) => {
+            contenedor.innerHTML = ''; // Limpiar la lista actual
+            const datos = snapshot.val();
+            
+            if (datos) {
+                const keys = Object.keys(datos);
+                const cantidadActual = keys.length;
+
+                // Si hay más mesas que antes, significa que entró una nueva
+                if (cantidadActual > cantidadAnterior && sonidoActivado && cantidadAnterior !== 0) {
+                    sonido.play();
+                }
+                cantidadAnterior = cantidadActual;
+
+                // Pintar la lista
+                keys.forEach(key => {
+                    const mesa = datos[key];
+                    let div = document.createElement('div');
+                    div.className = 'mesa-item';
+                    div.innerHTML = `<span>Mesa ${mesa.mesa}</span> <span>${mesa.hora}</span>`;
+                    contenedor.appendChild(div);
+                });
+            } else {
+                cantidadAnterior = 0;
+                contenedor.innerHTML = '<h2>No hay mesas marchadas</h2>';
+            }
+        });
+    </script>
+</body>
+</html>
