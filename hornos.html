@@ -8,10 +8,28 @@
     <style>
         :root { --bg-color: #fdfcf5; --header-bg: #f8f1e5; --primary-text: #3e2723; --warning-color: #f39c12; --orden-bg: #e74c3c; --shadow: 0 4px 6px rgba(0,0,0,0.05); --neon-beige: #f5f5dc;}
         body, html { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--primary-text); text-align: center; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
-        .header { background-color: var(--header-bg); padding: 10px 20px; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; flex-shrink: 0; }
+        
+        /* Cabecera relativa para posicionar el botón de pantalla completa */
+        .header { position: relative; background-color: var(--header-bg); padding: 10px 20px; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; flex-shrink: 0; }
         .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2em; color: #8d6e63; }
         .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1em; opacity: 0.8; }
         
+        /* BOTÓN DE PANTALLA COMPLETA */
+        #btn-fullscreen {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px 15px;
+            color: var(--primary-text);
+            transition: 0.2s;
+        }
+        #btn-fullscreen:hover { background: rgba(0,0,0,0.2); transform: scale(1.05); }
+
         #btn-sonido { background-color: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; margin: 10px auto; display: inline-flex; z-index: 100; }
         #lista-mesas { display: grid; flex-grow: 1; gap: 15px; padding: 15px; box-sizing: border-box; align-items: stretch; justify-items: stretch; }
         
@@ -37,6 +55,7 @@
     <div class="header">
         <h1>Pastamania</h1>
         <h2>Panel de Hornos - Expedir</h2>
+        <button id="btn-fullscreen" title="Pantalla Completa">⛶</button>
     </div>
 
     <button id="btn-sonido">🔔 Activar Sonido y Conectar</button>
@@ -61,6 +80,18 @@
         let esPrimeraCarga = true; 
         const audioElement = document.getElementById('audio-nueva-comanda');
         const btnSonido = document.getElementById('btn-sonido');
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+
+        // LÓGICA DE PANTALLA COMPLETA
+        btnFullscreen.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    console.log(`Error al intentar modo pantalla completa: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
 
         btnSonido.addEventListener('click', () => {
             audioElement.volume = 0;
