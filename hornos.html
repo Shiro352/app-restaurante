@@ -6,26 +6,31 @@
     <title>Hornos - Pastamania</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #fdfcf5; --header-bg: #f8f1e5; --primary-text: #3e2723;
-            --warning-color: #f39c12; --orden-bg: #e74c3c; --shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
+        :root { --bg-color: #fdfcf5; --header-bg: #f8f1e5; --primary-text: #3e2723; --warning-color: #f39c12; --orden-bg: #e74c3c; --shadow: 0 4px 6px rgba(0,0,0,0.05); --neon-beige: #f5f5dc;}
         body, html { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--primary-text); text-align: center; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
         .header { background-color: var(--header-bg); padding: 10px 20px; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; flex-shrink: 0; }
         .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2em; color: #8d6e63; }
         .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1em; opacity: 0.8; }
         
+        #btn-sonido { background-color: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; margin: 10px auto; display: inline-flex; z-index: 100; }
         #lista-mesas { display: grid; flex-grow: 1; gap: 15px; padding: 15px; box-sizing: border-box; align-items: stretch; justify-items: stretch; }
+        
         .mesa-item { background: white; border: 2px solid #eae0d0; color: var(--primary-text); border-radius: 15px; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; width: 100%; height: 100%; }
         .mesa-item::after { content: 'TOCA PARA SACAR'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--warning-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.5vw; opacity: 0; transition: opacity 0.2s; }
         .mesa-item:hover { border-color: var(--warning-color); transform: translateY(-2px); }
         .mesa-item:hover::after { opacity: 1; }
-        .mesa-item:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
         .mesa-numero { font-size: 3vw; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;}
         .badge-orden { background-color: var(--orden-bg); color: white; padding: 5px 15px; border-radius: 12px; font-size: 0.5em; font-weight: 700; margin-right: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
         .mesa-hora { font-size: 1.5vw; opacity: 0.7; background: #f1f1f1; padding: 5px 10px; border-radius: 8px;}
         h2.vacio { opacity: 0.5; margin-top: 50px; font-weight: 400; grid-column: 1 / -1;}
+
+        /* ANIMACIÓN BEIGE FLUORESCENTE AL RECIBIR */
+        #pantalla-animacion { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; }
+        #pantalla-animacion.activa { animation: aparecerDesaparecer 3.5s forwards; box-shadow: inset 0 0 100px rgba(245, 245, 220, 0.3); }
+        #texto-animacion { font-size: 12vw; color: #fff; text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-beige), 0 0 30px var(--neon-beige), 0 0 40px var(--neon-beige), 0 0 55px var(--neon-beige), 0 0 75px var(--neon-beige); margin: 0; text-transform: uppercase; }
+        @keyframes aparecerDesaparecer { 0% { transform: scale(0.2); opacity: 0; } 15% { transform: scale(1.2); opacity: 1; } 25% { transform: scale(1); opacity: 1; } 80% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+        .oculto { display: none !important; }
     </style>
 </head>
 <body>
@@ -34,28 +39,45 @@
         <h2>Panel de Hornos - Expedir</h2>
     </div>
 
+    <button id="btn-sonido">🔔 Activar Sonido y Conectar</button>
     <div id="lista-mesas"></div>
+
+    <div id="pantalla-animacion" class="oculto"><h1 id="texto-animacion">MESA 1</h1></div>
+    <audio id="audio-nueva-comanda" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; 
         import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w",
-            authDomain: "comandasrestaurante.firebaseapp.com",
-            databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "comandasrestaurante",
-            storageBucket: "comandasrestaurante.firebasestorage.app",
-            messagingSenderId: "242359011020",
-            appId: "1:242359011020:web:70d0e9fd5712b1d3662469"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w", authDomain: "comandasrestaurante.firebaseapp.com", databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app", projectId: "comandasrestaurante", storageBucket: "comandasrestaurante.firebasestorage.app", messagingSenderId: "242359011020", appId: "1:242359011020:web:70d0e9fd5712b1d3662469" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
-        // HORNOS AHORA ESCUCHA SOLO LA CARPETA 'mesas_hornos'
         const hornosRef = ref(db, 'mesas_hornos');
         const contenedor = document.getElementById('lista-mesas');
+
+        let sonidoActivado = false;
+        let mesasConocidas = []; 
+        let esPrimeraCarga = true; 
+        const audioElement = document.getElementById('audio-nueva-comanda');
+        const btnSonido = document.getElementById('btn-sonido');
+
+        btnSonido.addEventListener('click', () => {
+            audioElement.volume = 0;
+            audioElement.play().then(() => {
+                audioElement.pause(); audioElement.currentTime = 0; audioElement.volume = 1; sonidoActivado = true;
+                btnSonido.style.backgroundColor = "#6c757d"; btnSonido.innerHTML = "🔊 Hornos Conectados"; btnSonido.style.pointerEvents = "none";
+            }).catch(e => console.error(e));
+        });
+
+        function animarMesaEntrante(nombreMesa) {
+            const pantallaAnim = document.getElementById('pantalla-animacion');
+            document.getElementById('texto-animacion').innerText = nombreMesa; 
+            pantallaAnim.classList.remove('oculto'); pantallaAnim.classList.remove('activa');
+            void pantallaAnim.offsetWidth; 
+            pantallaAnim.classList.add('activa');
+            setTimeout(() => { pantallaAnim.classList.add('oculto'); pantallaAnim.classList.remove('activa'); }, 3500);
+        }
 
         function ajustarTamañoMesas() {
             const cantidad = contenedor.children.length;
@@ -69,23 +91,25 @@
         onValue(hornosRef, (snapshot) => {
             contenedor.innerHTML = '';
             const datos = snapshot.val();
+            const keysActuales = datos ? Object.keys(datos) : [];
+            
+            if (!esPrimeraCarga && datos) {
+                const nuevas = keysActuales.filter(k => !mesasConocidas.includes(k));
+                if (nuevas.length > 0) {
+                    animarMesaEntrante(`MESA ${datos[nuevas[0]].mesa}`);
+                    if (sonidoActivado) { audioElement.currentTime = 0; audioElement.play().catch(e => console.log(e)); }
+                }
+            }
             
             if (datos) {
                 let contadorOrden = 1; 
-                Object.keys(datos).forEach(key => {
+                keysActuales.forEach(key => {
                     const mesa = datos[key];
                     let div = document.createElement('div');
                     div.className = 'mesa-item';
-                    div.innerHTML = `
-                        <span class="mesa-numero">
-                            <span class="badge-orden">${contadorOrden}º</span> Mesa ${mesa.mesa}
-                        </span> 
-                        <span class="mesa-hora">${mesa.hora}</span>`;
+                    div.innerHTML = `<span class="mesa-numero"><span class="badge-orden">${contadorOrden}º</span> Mesa ${mesa.mesa}</span> <span class="mesa-hora">${mesa.hora}</span>`;
                     
-                    div.onclick = () => {
-                        // Elimina la mesa definitivamente
-                        remove(ref(db, `mesas_hornos/${key}`));
-                    };
+                    div.onclick = () => { remove(ref(db, `mesas_hornos/${key}`)); };
                     
                     contenedor.appendChild(div);
                     contadorOrden++; 
@@ -93,6 +117,9 @@
             } else {
                 contenedor.innerHTML = '<h2 class="vacio">Hornos vacíos</h2>';
             }
+            
+            mesasConocidas = keysActuales;
+            esPrimeraCarga = false;
             ajustarTamañoMesas();
         });
     </script>
