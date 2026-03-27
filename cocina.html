@@ -9,32 +9,18 @@
         :root { --bg-color: #fdfcf5; --header-bg: #f8f1e5; --primary-text: #3e2723; --card-bg: #d9534f; --shadow: 0 4px 6px rgba(0,0,0,0.05); --neon-beige: #f5f5dc; }
         body, html { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--primary-text); text-align: center; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* Cabecera relativa para posicionar el botón de pantalla completa */
         .header { position: relative; background-color: var(--header-bg); padding: 10px 20px; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; flex-shrink: 0; }
         .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2em; color: #8d6e63; }
         .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1em; opacity: 0.8; }
 
-        /* BOTÓN DE PANTALLA COMPLETA */
-        #btn-fullscreen {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.1);
-            border: none;
-            border-radius: 8px;
-            font-size: 1.5em;
-            cursor: pointer;
-            padding: 5px 15px;
-            color: var(--primary-text);
-            transition: 0.2s;
-        }
+        #btn-fullscreen { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.1); border: none; border-radius: 8px; font-size: 1.5em; cursor: pointer; padding: 5px 15px; color: var(--primary-text); transition: 0.2s; }
         #btn-fullscreen:hover { background: rgba(0,0,0,0.2); transform: scale(1.05); }
 
         #btn-sonido { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; margin: 10px auto; display: inline-flex; z-index: 100; }
         #lista-mesas { display: grid; flex-grow: 1; gap: 15px; padding: 15px; box-sizing: border-box; align-items: stretch; justify-items: stretch; }
         
         .mesa-item { background: var(--card-bg); color: white; border-radius: 15px; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; width: 100%; height: 100%; }
-        .mesa-item::after { content: 'FINALIZAR MESA'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 2vw; opacity: 0; transition: opacity 0.2s; }
+        .mesa-item::after { content: 'METER EN EL HORNO'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 2vw; opacity: 0; transition: opacity 0.2s; text-align: center; padding: 10px;}
         .mesa-item:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
         .mesa-item:hover::after { opacity: 1; }
 
@@ -43,7 +29,6 @@
         .mesa-hora { font-size: 1.5vw; opacity: 0.9; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px;}
         h2.vacio { opacity: 0.5; margin-top: 50px; font-weight: 400; grid-column: 1 / -1; color: var(--primary-text);}
 
-        /* ANIMACIÓN BEIGE FLUORESCENTE AL RECIBIR */
         #pantalla-animacion { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; }
         #pantalla-animacion.activa { animation: aparecerDesaparecer 3.5s forwards; box-shadow: inset 0 0 100px rgba(245, 245, 220, 0.3); }
         #texto-animacion { font-size: 12vw; color: #fff; text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-beige), 0 0 30px var(--neon-beige), 0 0 40px var(--neon-beige), 0 0 55px var(--neon-beige), 0 0 75px var(--neon-beige); margin: 0; text-transform: uppercase; }
@@ -66,7 +51,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; 
-        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        // Importamos update y set
+        import { getDatabase, ref, onValue, remove, update, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w", authDomain: "comandasrestaurante.firebaseapp.com", databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app", projectId: "comandasrestaurante", storageBucket: "comandasrestaurante.firebasestorage.app", messagingSenderId: "242359011020", appId: "1:242359011020:web:70d0e9fd5712b1d3662469" };
         const app = initializeApp(firebaseConfig);
@@ -82,15 +68,8 @@
         const btnSonido = document.getElementById('btn-sonido');
         const btnFullscreen = document.getElementById('btn-fullscreen');
 
-        // LÓGICA DE PANTALLA COMPLETA
         btnFullscreen.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch((err) => {
-                    console.log(`Error al intentar modo pantalla completa: ${err.message}`);
-                });
-            } else {
-                document.exitFullscreen();
-            }
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch((err) => {}); } else { document.exitFullscreen(); }
         });
 
         btnSonido.addEventListener('click', () => {
@@ -141,7 +120,18 @@
                     div.innerHTML = `<span class="mesa-numero"><span class="badge-orden">${contadorOrden}º</span> Mesa ${mesa.mesa}</span> <span class="mesa-hora">${mesa.hora}</span>`;
                     
                     div.onclick = () => {
-                        remove(ref(db, `mesas_cocina/${key}`)); // Solo se borra
+                        // 1. Actualizar el estado en el historial a 'dentro'
+                        if (mesa.historialId) {
+                            update(ref(db, `historial_mesas/${mesa.historialId}`), { estado: 'dentro' });
+                        }
+                        
+                        // 2. Bloquear la mesa durante 15 minutos (15 * 60 * 1000 = 900.000 ms)
+                        set(ref(db, `mesas_bloqueadas/${mesa.mesa}`), {
+                            bloqueadaHasta: Date.now() + 900000 
+                        });
+
+                        // 3. Quitar de la pantalla de cocina
+                        remove(ref(db, `mesas_cocina/${key}`));
                     };
                     
                     contenedor.appendChild(div);
