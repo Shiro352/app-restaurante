@@ -20,7 +20,7 @@
         #lista-mesas { display: grid; flex-grow: 1; gap: 15px; padding: 15px; box-sizing: border-box; align-items: stretch; justify-items: stretch; }
         
         .mesa-item { background: var(--card-bg); color: white; border-radius: 15px; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; width: 100%; height: 100%; }
-        .mesa-item::after { content: 'METER EN EL HORNO'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 2vw; opacity: 0; transition: opacity 0.2s; text-align: center; padding: 10px;}
+        .mesa-item::after { content: 'METER EN COCINA'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 2vw; opacity: 0; transition: opacity 0.2s; text-align: center; padding: 10px;}
         .mesa-item:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
         .mesa-item:hover::after { opacity: 1; }
 
@@ -49,21 +49,34 @@
     <div id="pantalla-animacion" class="oculto"><h1 id="texto-animacion">MESA 1</h1></div>
     <audio id="audio-nueva-comanda" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
+    <div id="modal-sorpresa" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 5vw; text-align: center; margin-bottom: 20px;">Os tengo una sorpresita... 😏</h1>
+        <p id="texto-espera" style="font-size: 2vw; color: #f39c12; display: none; text-align: center;">Esperando a que las demás tablets acepten... ⏳</p>
+        <button id="btn-sorpresa" style="padding: 20px 40px; font-size: 2.5vw; background: #e74c3c; color: white; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5); transition: 0.3s;">Activar audio</button>
+    </div>
+
+    <audio id="audio-especial" src="./sorpresa.mp3" preload="auto"></audio>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; 
-        // Importamos update y set
         import { getDatabase, ref, onValue, remove, update, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w", authDomain: "comandasrestaurante.firebaseapp.com", databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app", projectId: "comandasrestaurante", storageBucket: "comandasrestaurante.firebasestorage.app", messagingSenderId: "242359011020", appId: "1:242359011020:web:70d0e9fd5712b1d3662469" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w", 
+            authDomain: "comandasrestaurante.firebaseapp.com", 
+            databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app", 
+            projectId: "comandasrestaurante", 
+            storageBucket: "comandasrestaurante.firebasestorage.app", 
+            messagingSenderId: "242359011020", 
+            appId: "1:242359011020:web:70d0e9fd5712b1d3662469" 
+        };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
         const cocinaRef = ref(db, 'mesas_cocina');
         const contenedor = document.getElementById('lista-mesas');
         
-        let sonidoActivado = false;
-        let mesasConocidas = []; 
-        let esPrimeraCarga = true; 
+        let sonidoActivado = false; let mesasConocidas = []; let esPrimeraCarga = true; 
         const audioElement = document.getElementById('audio-nueva-comanda');
         const btnSonido = document.getElementById('btn-sonido');
         const btnFullscreen = document.getElementById('btn-fullscreen');
@@ -120,17 +133,11 @@
                     div.innerHTML = `<span class="mesa-numero"><span class="badge-orden">${contadorOrden}º</span> Mesa ${mesa.mesa}</span> <span class="mesa-hora">${mesa.hora}</span>`;
                     
                     div.onclick = () => {
-                        // 1. Actualizar el estado en el historial a 'dentro'
-                        if (mesa.historialId) {
-                            update(ref(db, `historial_mesas/${mesa.historialId}`), { estado: 'dentro' });
-                        }
-                        
-                        // 2. Bloquear la mesa durante 15 minutos (15 * 60 * 1000 = 900.000 ms)
-                        set(ref(db, `mesas_bloqueadas/${mesa.mesa}`), {
-                            bloqueadaHasta: Date.now() + 900000 
-                        });
-
-                        // 3. Quitar de la pantalla de cocina
+                        const timestampActual = Date.now();
+                        if (mesa.historialId) { update(ref(db, `historial_mesas/${mesa.historialId}`), { estado: 'dentro' }); }
+                        if (mesa.carnes) { update(ref(db, `mesas_fuegos/${key}`), { estadoCocina: 'dentro' }); }
+                        if (mesa.statId) { update(ref(db, `estadisticas/${mesa.statId}`), { timestamp_dentro: timestampActual }); }
+                        set(ref(db, `mesas_bloqueadas/${mesa.mesa}`), { bloqueadaHasta: timestampActual + 900000 });
                         remove(ref(db, `mesas_cocina/${key}`));
                     };
                     
@@ -141,9 +148,42 @@
                 contenedor.innerHTML = '<h2 class="vacio">Cocina limpia. ¡Buen trabajo!</h2>';
             }
 
-            mesasConocidas = keysActuales;
-            esPrimeraCarga = false;
-            ajustarTamañoMesas();
+            mesasConocidas = keysActuales; esPrimeraCarga = false; ajustarTamañoMesas();
+        });
+
+        // === LÓGICA DEL MODAL SORPRESA ===
+        const MI_ESTACION = "cocina"; 
+        const modalSorpresa = document.getElementById('modal-sorpresa');
+        const btnSorpresa = document.getElementById('btn-sorpresa');
+        const textoEspera = document.getElementById('texto-espera');
+        const audioEspecial = document.getElementById('audio-especial');
+
+        let audioDesbloqueado = false; let sorpresaReproducida = false;
+
+        btnSorpresa.addEventListener('click', () => {
+            audioEspecial.volume = 0;
+            audioEspecial.play().then(() => {
+                audioEspecial.pause(); audioEspecial.currentTime = 0; audioEspecial.volume = 1;
+                audioDesbloqueado = true; btnSorpresa.style.display = 'none'; textoEspera.style.display = 'block';
+                update(ref(db, 'sorpresa_estado'), { [MI_ESTACION]: true });
+            }).catch(err => console.log("Error:", err));
+        });
+
+        onValue(ref(db, 'sorpresa_estado'), (snapshot) => {
+            const estado = snapshot.val() || {};
+            const todosListos = estado.sala && estado.cocina && estado.fuegos;
+
+            if (!todosListos) {
+                modalSorpresa.style.display = 'flex';
+                if (!estado[MI_ESTACION]) { btnSorpresa.style.display = 'block'; textoEspera.style.display = 'none'; }
+                sorpresaReproducida = false;
+            } else {
+                modalSorpresa.style.display = 'none'; 
+                if (audioDesbloqueado && !sorpresaReproducida) {
+                    audioEspecial.currentTime = 0; audioEspecial.play().catch(e => console.error(e));
+                    sorpresaReproducida = true;
+                }
+            }
         });
     </script>
 </body>

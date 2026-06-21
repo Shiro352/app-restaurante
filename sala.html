@@ -6,54 +6,38 @@
     <title>Sala - Pastamania</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #fdfcf5; --header-bg: #f8f1e5; --primary-text: #3e2723;
-            --accent-color: #e67e22; --shadow: 0 4px 6px rgba(0,0,0,0.05);
-            /* Color del botón bloqueado (15 min) */
-            --locked-color: #9b59b6; 
-        }
-
+        :root { --bg-color: #fdfcf5; --header-bg: #f8f1e5; --primary-text: #3e2723; --accent-color: #e67e22; --shadow: 0 4px 6px rgba(0,0,0,0.05); --locked-color: #9b59b6; }
         body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--primary-text); }
         .header { background-color: var(--header-bg); padding: 20px; text-align: center; box-shadow: var(--shadow); border-bottom: 2px solid #eae0d0; }
         .header h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 2.5em; color: #8d6e63; }
         .header h2 { margin: 5px 0 0 0; font-weight: 400; font-size: 1.1em; opacity: 0.8; }
-
+        
         .layout { display: flex; flex-wrap: wrap; max-width: 1200px; margin: auto; padding: 20px; gap: 30px; }
         .panel-mesas { flex: 2; min-width: 300px; }
         .panel-registro { flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 15px; box-shadow: var(--shadow); border: 2px solid #eae0d0; max-height: 70vh; overflow-y: auto; display: flex; flex-direction: column;}
+        
+        /* PESTAÑAS SALA / TERRAZA */
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+        .tab-btn { flex: 1; padding: 15px; background: #eae0d0; border: none; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 1em; font-weight: 600; cursor: pointer; color: var(--primary-text); transition: 0.3s; }
+        .tab-btn.activo { background: var(--accent-color); color: white; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.4); }
 
         .cabecera-registro { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 10px; }
         .cabecera-registro h3 { margin: 0; }
-        
         #btn-limpiar { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 0.8em; cursor: pointer; transition: 0.2s; }
         #btn-limpiar:hover { background: #c0392b; transform: scale(1.05); }
-
+        
         .log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-weight: 600;}
         .log-item .hora { opacity: 0.6; font-weight: 400; font-size: 0.9em;}
         .etiqueta-carne { font-size: 0.75em; background: #e74c3c; color: white; padding: 3px 8px; border-radius: 6px; margin-left: 5px; }
-        .etiqueta-dentro { font-size: 0.75em; background: #2ecc71; color: white; padding: 3px 8px; border-radius: 6px; margin-left: 5px; } /* Etiqueta Verde de "Dentro" */
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 15px; padding: 20px 0; }
+        .etiqueta-dentro { font-size: 0.75em; background: #2ecc71; color: white; padding: 3px 8px; border-radius: 6px; margin-left: 5px; }
         
-        /* Botones Normales */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 15px; padding: 10px 0; }
         button.mesa-btn { aspect-ratio: 1 / 1; font-size: 22px; font-weight: 600; cursor: pointer; background: white; color: var(--primary-text); border: 2px solid #eae0d0; border-radius: 12px; box-shadow: var(--shadow); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;}
         button.mesa-btn:hover:not(:disabled) { transform: translateY(-3px); border-color: var(--accent-color); color: var(--accent-color); }
         button.mesa-btn:active:not(:disabled) { background-color: var(--accent-color); color: white; transform: translateY(1px); }
-
-        /* ESTILO DEL BOTÓN BLOQUEADO (15 MINUTOS) */
-        button.mesa-btn:disabled {
-            border: 3px solid var(--locked-color) !important;
-            background-color: #f5eef8;
-            color: var(--locked-color);
-            cursor: not-allowed;
-            opacity: 0.7;
-            transform: none;
-            box-shadow: none;
-        }
-
+        button.mesa-btn:disabled { border: 3px solid var(--locked-color) !important; background-color: #f5eef8; color: var(--locked-color); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        
         #notificacion { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: none; font-weight: 600; z-index: 100; }
-
-        /* Modal Carnes */
         #overlay-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal h2 { margin-top: 0; color: var(--primary-text); }
@@ -72,9 +56,14 @@
 
     <div class="layout">
         <div class="panel-mesas">
-            <div class="grid" id="contenedor-mesas"></div>
+            <div class="tabs">
+                <button class="tab-btn activo" id="tab-sala">Interior (1-70)</button>
+                <button class="tab-btn" id="tab-terraza">Terraza (T1-T20)</button>
+            </div>
+            
+            <div class="grid" id="contenedor-sala"></div>
+            <div class="grid" id="contenedor-terraza" style="display: none;"></div>
         </div>
-
         <div class="panel-registro">
             <div class="cabecera-registro">
                 <h3>Registro</h3>
@@ -85,11 +74,11 @@
     </div>
 
     <div id="notificacion">Mesa enviada</div>
-
+    
     <div id="overlay-modal">
         <div class="modal">
             <h2 id="titulo-modal">Mesa X</h2>
-            <p>¿Esta mesa incluye carnes para los hornos?</p>
+            <p>¿Esta mesa incluye carnes para los fuegos?</p>
             <div class="modal-botones">
                 <button class="btn-modal btn-si" id="btn-carne-si">🥩 SÍ</button>
                 <button class="btn-modal btn-no" id="btn-carne-no">🍝 NO</button>
@@ -98,37 +87,66 @@
         </div>
     </div>
 
+    <div id="modal-sorpresa" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 5vw; text-align: center; margin-bottom: 20px;">Os tengo una sorpresita... 😏</h1>
+        <p id="texto-espera" style="font-size: 2vw; color: #f39c12; display: none; text-align: center;">Esperando a que las demás tablets acepten... ⏳</p>
+        <button id="btn-sorpresa" style="padding: 20px 40px; font-size: 2.5vw; background: #e74c3c; color: white; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5); transition: 0.3s;">Activar audio</button>
+    </div>
+
+    <audio id="audio-especial" src="./sorpresa.mp3" preload="auto"></audio>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"; 
-        // Añadimos 'set' para guardar con IDs específicos
-        import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, set, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w", authDomain: "comandasrestaurante.firebaseapp.com", databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app", projectId: "comandasrestaurante", storageBucket: "comandasrestaurante.firebasestorage.app", messagingSenderId: "242359011020", appId: "1:242359011020:web:70d0e9fd5712b1d3662469" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCCS-znEaMQJmzRcraK2v0dfV3S_rCwA8w", 
+            authDomain: "comandasrestaurante.firebaseapp.com", 
+            databaseURL: "https://comandasrestaurante-default-rtdb.europe-west1.firebasedatabase.app", 
+            projectId: "comandasrestaurante", 
+            storageBucket: "comandasrestaurante.firebasestorage.app", 
+            messagingSenderId: "242359011020", 
+            appId: "1:242359011020:web:70d0e9fd5712b1d3662469" 
+        };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
-        const cocinaRef = ref(db, 'mesas_cocina');
-        const hornosRef = ref(db, 'mesas_hornos'); 
         const historialRef = ref(db, 'historial_mesas');
-        const bloqueosRef = ref(db, 'mesas_bloqueadas'); // Nodo para los bloqueos de 15 min
+        const bloqueosRef = ref(db, 'mesas_bloqueadas');
 
-        const contenedor = document.getElementById('contenedor-mesas');
+        const contSala = document.getElementById('contenedor-sala');
+        const contTerraza = document.getElementById('contenedor-terraza');
         const listaRegistro = document.getElementById('lista-registro');
         const notif = document.getElementById('notificacion');
-
         const overlayModal = document.getElementById('overlay-modal');
         const tituloModal = document.getElementById('titulo-modal');
         let mesaSeleccionadaActual = null;
         let bloqueosActuales = {};
 
-        // 1. Generar botones con IDs para poder bloquearlos
+        // LÓGICA DE PESTAÑAS
+        document.getElementById('tab-sala').onclick = (e) => {
+            e.target.classList.add('activo'); document.getElementById('tab-terraza').classList.remove('activo');
+            contSala.style.display = 'grid'; contTerraza.style.display = 'none';
+        };
+        document.getElementById('tab-terraza').onclick = (e) => {
+            e.target.classList.add('activo'); document.getElementById('tab-sala').classList.remove('activo');
+            contTerraza.style.display = 'grid'; contSala.style.display = 'none';
+        };
+
+        // GENERAR BOTONES SALA (1-70)
         for (let i = 1; i <= 70; i++) {
             let btn = document.createElement('button');
-            btn.className = 'mesa-btn';
-            btn.id = `btn-mesa-${i}`;
-            btn.innerText = i;
+            btn.className = 'mesa-btn'; btn.id = `btn-mesa-${i}`; btn.innerText = i;
             btn.onclick = () => abrirModalCarnes(i);
-            contenedor.appendChild(btn);
+            contSala.appendChild(btn);
+        }
+
+        // GENERAR BOTONES TERRAZA (T1-T20)
+        for (let i = 1; i <= 20; i++) {
+            let btn = document.createElement('button');
+            btn.className = 'mesa-btn'; btn.id = `btn-mesa-T${i}`; btn.innerText = `T${i}`;
+            btn.onclick = () => abrirModalCarnes(`T${i}`);
+            contTerraza.appendChild(btn);
         }
 
         function abrirModalCarnes(numero) {
@@ -144,41 +162,35 @@
         document.getElementById('btn-carne-no').onclick = () => { procesarMarcha(mesaSeleccionadaActual, false); cerrarModal(); };
 
         function procesarMarcha(numero, tieneCarnes) {
-            const horaActual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timestampActual = Date.now();
+            const horaActual = new Date(timestampActual).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const fechaActual = new Date(timestampActual).toISOString().split('T')[0];
             
-            // Generamos primero la clave del historial
-            const nuevoRegistroRef = push(historialRef);
-            const historialId = nuevoRegistroRef.key;
+            const statRef = push(ref(db, 'estadisticas'));
+            const statId = statRef.key;
+            set(statRef, { mesa: numero, carnes: tieneCarnes, fecha: fechaActual, timestamp_marchada: timestampActual });
+
+            const mesaIdComun = push(ref(db, 'mesas_cocina')).key;
+            const historialId = push(historialRef).key;
 
             const datosMesa = { 
-                mesa: numero, 
-                hora: horaActual, 
-                carnes: tieneCarnes,
-                historialId: historialId, // Pasamos el ID para que cocina pueda actualizarlo
-                estado: 'marchada'
+                mesa: numero, hora: horaActual, carnes: tieneCarnes,
+                historialId: historialId, statId: statId, estado: 'marchada', estadoCocina: 'esperando' 
             };
             
-            // Guardamos en historial con ese ID específico
-            set(nuevoRegistroRef, datosMesa);
+            set(ref(db, `historial_mesas/${historialId}`), datosMesa);
+            set(ref(db, `mesas_cocina/${mesaIdComun}`), datosMesa);
             
-            // Enviamos a las pantallas
-            push(cocinaRef, datosMesa);
-            if(tieneCarnes) { push(hornosRef, datosMesa); }
+            if(tieneCarnes) { set(ref(db, `mesas_fuegos/${mesaIdComun}`), datosMesa); }
             
-            notif.innerText = `Mesa ${numero} enviada`;
-            notif.style.display = 'block';
+            notif.innerText = `Mesa ${numero} enviada`; notif.style.display = 'block';
             setTimeout(() => notif.style.display = 'none', 2000);
         }
 
-        // LIMPIAR TODO (Historial y Bloqueos)
         document.getElementById('btn-limpiar').onclick = () => {
-            if(confirm("¿Borrar todo el registro y desbloquear todas las mesas?")) {
-                remove(historialRef);
-                remove(bloqueosRef);
-            }
+            if(confirm("¿Borrar todo el registro y desbloquear todas las mesas?")) { remove(historialRef); remove(bloqueosRef); }
         };
 
-        // ESCUCHAR HISTORIAL PARA PINTARLO (INCLUYENDO LA ETIQUETA 'DENTRO')
         onValue(historialRef, (snapshot) => {
             listaRegistro.innerHTML = '';
             const datos = snapshot.val();
@@ -187,7 +199,6 @@
                 arrayMesas.forEach(mesa => {
                     const eqCarne = mesa.carnes ? '<span class="etiqueta-carne">Carnes</span>' : '';
                     const eqDentro = mesa.estado === 'dentro' ? '<span class="etiqueta-dentro">Dentro</span>' : '';
-                    
                     listaRegistro.innerHTML += `
                         <div class="log-item">
                             <span>Mesa ${mesa.mesa} ${eqCarne} ${eqDentro}</span> 
@@ -199,31 +210,58 @@
             }
         });
 
-        // LÓGICA DE BLOQUEO DE BOTONES
         function actualizarBotonesBloqueados() {
             const ahora = Date.now();
+            // Desbloquear Sala
             for (let i = 1; i <= 70; i++) {
                 const btn = document.getElementById(`btn-mesa-${i}`);
-                if (!btn) continue;
-                
-                const bloqueo = bloqueosActuales[i];
-                if (bloqueo && ahora < bloqueo.bloqueadaHasta) {
-                    btn.disabled = true;
-                } else {
-                    btn.disabled = false;
-                }
+                if (btn) btn.disabled = bloqueosActuales[i] && ahora < bloqueosActuales[i].bloqueadaHasta;
+            }
+            // Desbloquear Terraza
+            for (let i = 1; i <= 20; i++) {
+                const idTerraza = `T${i}`;
+                const btn = document.getElementById(`btn-mesa-${idTerraza}`);
+                if (btn) btn.disabled = bloqueosActuales[idTerraza] && ahora < bloqueosActuales[idTerraza].bloqueadaHasta;
             }
         }
 
-        // Escuchar cuando Cocina bloquea una mesa
-        onValue(bloqueosRef, (snapshot) => {
-            bloqueosActuales = snapshot.val() || {};
-            actualizarBotonesBloqueados();
-        });
-
-        // Revisar cada 10 segundos si algún bloqueo ha expirado para soltar el botón
+        onValue(bloqueosRef, (snapshot) => { bloqueosActuales = snapshot.val() || {}; actualizarBotonesBloqueados(); });
         setInterval(actualizarBotonesBloqueados, 10000);
 
+        // === LÓGICA DEL MODAL SORPRESA ===
+        const MI_ESTACION = "sala"; 
+        const modalSorpresa = document.getElementById('modal-sorpresa');
+        const btnSorpresa = document.getElementById('btn-sorpresa');
+        const textoEspera = document.getElementById('texto-espera');
+        const audioEspecial = document.getElementById('audio-especial');
+
+        let audioDesbloqueado = false; let sorpresaReproducida = false;
+
+        btnSorpresa.addEventListener('click', () => {
+            audioEspecial.volume = 0;
+            audioEspecial.play().then(() => {
+                audioEspecial.pause(); audioEspecial.currentTime = 0; audioEspecial.volume = 1;
+                audioDesbloqueado = true; btnSorpresa.style.display = 'none'; textoEspera.style.display = 'block';
+                update(ref(db, 'sorpresa_estado'), { [MI_ESTACION]: true });
+            }).catch(err => console.log("Error:", err));
+        });
+
+        onValue(ref(db, 'sorpresa_estado'), (snapshot) => {
+            const estado = snapshot.val() || {};
+            const todosListos = estado.sala && estado.cocina && estado.fuegos;
+
+            if (!todosListos) {
+                modalSorpresa.style.display = 'flex';
+                if (!estado[MI_ESTACION]) { btnSorpresa.style.display = 'block'; textoEspera.style.display = 'none'; }
+                sorpresaReproducida = false;
+            } else {
+                modalSorpresa.style.display = 'none'; 
+                if (audioDesbloqueado && !sorpresaReproducida) {
+                    audioEspecial.currentTime = 0; audioEspecial.play().catch(e => console.error(e));
+                    sorpresaReproducida = true;
+                }
+            }
+        });
     </script>
 </body>
 </html>
